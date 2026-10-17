@@ -1,0 +1,335 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# starship-links: a powerline prompt whose segments are clickable links.
+# One config for PowerShell 7 (Windows) and zsh (Linux, WSL). shell/init.ps1 and
+# shell/init.zsh point STARSHIP_CONFIG at this file.
+#
+# Clickable segments are OSC 8 hyperlinks. The shell hook (shell/prompt.ps1,
+# shell/prompt.zsh) sets these env vars before every prompt:
+#   STARSHIP_CWD_URI            file URI of the current folder
+#   STARSHIP_GIT_ROOT           repo root, set inside any git repo
+#   STARSHIP_GIT_OWNER(_URL)    owner, https://github.com/owner
+#   STARSHIP_GIT_REPO(_URL)     repo, https://github.com/owner/repo
+#   STARSHIP_GIT_BRANCHES_URL   .../branches (repo folder if there is no remote)
+#   STARSHIP_GIT_TREE_URL       .../tree/<branch>
+#   STARSHIP_PY_URI             venv folder (or the python on PATH), #<python version>
+#   STARSHIP_DOCKER             compose ports as ready-made links (" " if none run)
+# The banner (shell/init.*) sets GH_USER, CLAUDE_USER and AG_USER once per shell.
+#
+# Link syntax: \u001b\\]8;;URL\u0007 text \u001b\\]8;;\u0007 ("\\]" is an escaped "]").
+# Link openers and closers use bg:prev_bg so they never change the next arrow colour.
+# A ( ) group renders only if one of its variables is set: that hides the closers
+# outside a repo.
+
+command_timeout = 2500
+
+format = """
+[\uE0B6](fg:os_bg)\
+$os\
+$time\
+${env_var.cwd_link}$directory[\u001b\\]8;;\u0007](bg:prev_bg)\
+${env_var.gh_user}\
+${env_var.git_sep}\
+(${env_var.git_owner_link}${env_var.git_owner}[\u001b\\]8;;\u0007/](fg:git_fg bg:git_bg))\
+(${env_var.git_repo_link}${env_var.git_repo}[\u001b\\]8;;\u0007](bg:prev_bg))\
+${env_var.git_branches}\
+(${env_var.git_tree_link}$git_branch[\u001b\\]8;;\u0007](bg:prev_bg))\
+$git_status\
+$c\
+$rust\
+$golang\
+$nodejs\
+$bun\
+$php\
+$java\
+$kotlin\
+$haskell\
+(${env_var.py_link}$python[\u001b\\]8;;\u0007](bg:prev_bg))\
+${env_var.claude_status}\
+${env_var.docker}\
+$docker_context\
+$conda\
+${env_var.antigravity_status}\
+[\uE0B4 ](fg:prev_bg)\
+$cmd_duration"""
+
+palette = 'high_contrast'
+
+[os]
+disabled = false
+style = "bg:os_bg fg:os_fg"
+format = '[$symbol ]($style)'
+
+[os.symbols]
+Windows = "\uE70F"
+Ubuntu = "\uF31B"
+Debian = "\uF306"
+Linux = "\uF31A"
+
+[username]
+disabled = true
+
+[time]
+disabled = false
+time_format = "%R"
+style = "fg:time_fg bg:time_bg"
+format = "[\uE0B0](fg:prev_bg bg:time_bg)[ $time ]($style)"
+
+# --- FOLDER: opens in Explorer (or VS Code) ---
+[env_var.cwd_link]
+variable = "STARSHIP_CWD_URI"
+format = "[\u001b\\]8;;$env_value\u0007](bg:prev_bg)"
+
+[directory]
+style = "fg:dir_fg bg:dir_bg"
+format = "[\uE0B0](fg:prev_bg bg:dir_bg)[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "\u2026/"
+
+[directory.substitutions]
+"Documents" = "\U000F0219 "
+"Downloads" = "\uF019 "
+"Music" = "\uF001 "
+"Pictures" = "\uF03E "
+"Developer" = "\U000F0C8B "
+
+[env_var.gh_user]
+variable = "GH_USER"
+style = "fg:gh_fg bg:gh_bg"
+format = "[\uE0B0](fg:prev_bg bg:gh_bg)[\u001b\\]8;;https://github.com/$env_value\u0007 \uF09B \u001b\\]8;;\u0007]($style)"
+
+# --- REPO: owner and repo are separate links ---
+[env_var.git_sep]
+variable = "STARSHIP_GIT_ROOT"
+format = "[\uE0B0](fg:prev_bg bg:git_bg)"
+
+[env_var.git_owner_link]
+variable = "STARSHIP_GIT_OWNER_URL"
+style = "fg:git_fg bg:git_bg"
+format = "[\u001b\\]8;;$env_value\u0007 \uF401 ]($style)"
+
+[env_var.git_owner]
+variable = "STARSHIP_GIT_OWNER"
+style = "fg:git_fg bg:git_bg"
+format = "[$env_value]($style)"
+
+[env_var.git_repo_link]
+variable = "STARSHIP_GIT_REPO_URL"
+style = "fg:git_fg bg:git_bg"
+format = "[\u001b\\]8;;$env_value\u0007]($style)"
+
+[env_var.git_repo]
+variable = "STARSHIP_GIT_REPO"
+style = "fg:git_fg bg:git_bg"
+format = "[$env_value ]($style)"
+
+# --- BRANCH: icon lists branches, name opens the branch ---
+[env_var.git_branches]
+variable = "STARSHIP_GIT_BRANCHES_URL"
+style = "fg:git_fg bg:git_bg"
+format = "[\u001b\\]8;;$env_value\u0007 \uF418 \u001b\\]8;;\u0007]($style)"
+
+[env_var.git_tree_link]
+variable = "STARSHIP_GIT_TREE_URL"
+style = "fg:git_fg bg:git_bg"
+format = "[\u001b\\]8;;$env_value\u0007]($style)"
+
+[git_branch]
+style = "fg:git_fg bg:git_bg"
+format = "[$branch ]($style)"
+
+[git_status]
+style = "fg:git_fg bg:git_bg"
+format = "[($all_status$ahead_behind )]($style)"
+# WSL only: on /mnt/<drive> paths let the Windows binary run git status (~10x faster)
+windows_starship = "/mnt/c/Program Files/starship/bin/starship.exe"
+
+# --- LANGUAGES: hover shows the version ---
+[nodejs]
+symbol = "\uE718"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://nodejs.org/docs/$version/api/\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[bun]
+symbol = "\uE76F"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://bun.sh/docs#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[c]
+symbol = "\uE61E"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://en.cppreference.com/w/c#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[rust]
+symbol = "\uE7A8"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://doc.rust-lang.org/std/#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[golang]
+symbol = "\uE627"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://go.dev/doc/#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[php]
+symbol = "\uE608"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://www.php.net/docs.php#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[java]
+symbol = "\uE256"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://docs.oracle.com/en/java/#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[kotlin]
+symbol = "\uE634"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://kotlinlang.org/docs/#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+[haskell]
+symbol = "\uE61F"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[\u001b\\]8;;https://www.haskell.org/documentation/#$version\u0007 $symbol \u001b\\]8;;\u0007]($style)"
+
+# --- PYTHON: opens the venv folder. No $version: that would run python on every prompt ---
+[env_var.py_link]
+variable = "STARSHIP_PY_URI"
+format = "[\u001b\\]8;;$env_value\u0007](bg:prev_bg)"
+
+[python]
+symbol = "\uE606"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[ $symbol ]($style)"
+
+[env_var.claude_status]
+variable = "CLAUDE_USER"
+style = "fg:claude_fg bg:claude_bg"
+format = "[\uE0B0](fg:prev_bg bg:claude_bg)[\u001b\\]8;;https://claude.ai/#$env_value\u0007 \uF069 \u001b\\]8;;\u0007]($style)"
+
+# --- DOCKER: one link per published compose port ---
+[env_var.docker]
+variable = "STARSHIP_DOCKER"
+style = "fg:docker_fg bg:docker_bg"
+format = "[\uE0B0](fg:prev_bg bg:docker_bg)[ \uF308$env_value]($style)"
+
+[docker_context]
+symbol = "\uF308"
+style = "fg:docker_fg bg:docker_bg"
+format = "[\uE0B0](fg:prev_bg bg:docker_bg)[ $symbol $context ]($style)"
+
+[conda]
+symbol = "\uF10C"
+style = "fg:lang_fg bg:lang_bg"
+format = "[\uE0B0](fg:prev_bg bg:lang_bg)[ $symbol ]($style)"
+ignore_base = false
+
+[env_var.antigravity_status]
+variable = "AG_USER"
+style = "fg:ai_fg bg:ai_bg"
+format = "[\uE0B0](fg:prev_bg bg:ai_bg)[\u001b\\]8;;https://antigravity.google/#$env_value\u0007 \U000F0AE2 \u001b\\]8;;\u0007]($style)"
+
+[line_break]
+disabled = true
+
+[character]
+disabled = true
+
+[cmd_duration]
+show_milliseconds = true
+format = "\uEAF4 in $duration "
+style = "fg:plain_fg"
+disabled = false
+show_notifications = true
+min_time_to_notify = 45000
+
+# Each palette maps the same roles, so a theme switch is one line: palette = '<name>'.
+# <segment>_bg is the segment colour, <segment>_fg its text and icons.
+# plain_fg is text drawn on the terminal background (command duration).
+#
+# Readability rules every palette here follows (check with contrast.py):
+#   - text on its segment >= 7:1 (WCAG AAA), so small icons stay sharp
+#   - high_contrast also alternates light and dark segments, so each border is
+#     visible by lightness alone, not only by hue (helps colour-blind eyes)
+
+[palettes.high_contrast]
+os_bg = "#ff8fa3"
+os_fg = "#16161e"
+time_bg = "#292e42"
+time_fg = "#c0caf5"
+dir_bg = "#82aaff"
+dir_fg = "#16161e"
+gh_bg = "#3b4261"
+gh_fg = "#e6e9f5"
+git_bg = "#e0af68"
+git_fg = "#16161e"
+lang_bg = "#173022"
+lang_fg = "#9ece6a"
+claude_bg = "#ff9e64"
+claude_fg = "#16161e"
+docker_bg = "#16324f"
+docker_fg = "#7dcfff"
+ai_bg = "#c3a6ff"
+ai_fg = "#16161e"
+plain_fg = "#a9b1d6"
+
+[palettes.catppuccin_mocha]
+os_bg = "#f38ba8"
+os_fg = "#11111b"
+time_bg = "#b4befe"
+time_fg = "#11111b"
+dir_bg = "#fab387"
+dir_fg = "#11111b"
+gh_bg = "#a6adc8"
+gh_fg = "#11111b"
+git_bg = "#f9e2af"
+git_fg = "#11111b"
+lang_bg = "#a6e3a1"
+lang_fg = "#11111b"
+claude_bg = "#eb8f6f"
+claude_fg = "#11111b"
+docker_bg = "#89dceb"
+docker_fg = "#11111b"
+ai_bg = "#cba6f7"
+ai_fg = "#11111b"
+plain_fg = "#b4befe"
+
+[palettes.tokyo_night]
+os_bg = "#ff8fa3"
+os_fg = "#16161e"
+time_bg = "#c0caf5"
+time_fg = "#16161e"
+dir_bg = "#82aaff"
+dir_fg = "#16161e"
+gh_bg = "#a9b1d6"
+gh_fg = "#16161e"
+git_bg = "#e0af68"
+git_fg = "#16161e"
+lang_bg = "#9ece6a"
+lang_fg = "#16161e"
+claude_bg = "#ff9e64"
+claude_fg = "#16161e"
+docker_bg = "#2ac3de"
+docker_fg = "#16161e"
+ai_bg = "#c3a6ff"
+ai_fg = "#16161e"
+plain_fg = "#a9b1d6"
+
+[palettes.gruvbox_dark]
+os_bg = "#fd9585"
+os_fg = "#1d2021"
+time_bg = "#ebdbb2"
+time_fg = "#1d2021"
+dir_bg = "#9fbfb2"
+dir_fg = "#1d2021"
+gh_bg = "#bdae93"
+gh_fg = "#1d2021"
+git_bg = "#fabd2f"
+git_fg = "#1d2021"
+lang_bg = "#c3c64a"
+lang_fg = "#1d2021"
+claude_bg = "#fe9a4a"
+claude_fg = "#1d2021"
+docker_bg = "#9fcb8f"
+docker_fg = "#1d2021"
+ai_bg = "#e5a3b5"
+ai_fg = "#1d2021"
+plain_fg = "#bdae93"
