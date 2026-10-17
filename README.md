@@ -7,6 +7,10 @@ branch, the Python venv, or a running Docker port.
 One `starship.toml` serves PowerShell 7 on Windows and zsh on Linux and WSL.
 On WSL, you can share one copy with Windows.
 
+![The startup banner and the prompt bar](docs/img/terminal.png)
+
+All names, emails and paths in these images are examples.
+
 ## What each segment does
 
 | Segment | Click opens | Hover shows |
@@ -25,6 +29,34 @@ On WSL, you can share one copy with Windows.
 
 Segments show only when they apply. For example, the git part appears only
 inside a repo, and Docker appears only in a folder with a compose file.
+
+### What a click opens
+
+The pages below are mock-ups. The address bar shows the real URL that each
+link opens.
+
+<table>
+<tr>
+<td width="50%"><b>Folder</b><br><img src="docs/img/open-folder.png" alt="The folder in File Explorer"></td>
+<td width="50%"><b>GitHub icon and <code>owner</code></b><br><img src="docs/img/open-profile.png" alt="The owner page"></td>
+</tr>
+<tr>
+<td><b><code>repo</code></b><br><img src="docs/img/open-repo.png" alt="The repository page"></td>
+<td><b>Branch icon</b><br><img src="docs/img/open-branches.png" alt="The branch list"></td>
+</tr>
+<tr>
+<td><b>Branch name</b><br><img src="docs/img/open-branch.png" alt="The branch page"></td>
+<td><b>Python</b><br><img src="docs/img/open-venv.png" alt="The venv folder"></td>
+</tr>
+<tr>
+<td><b>Docker <code>:5173</code></b><br><img src="docs/img/open-docker.png" alt="The app on localhost:5173"></td>
+<td><b>Claude</b><br><img src="docs/img/open-claude.png" alt="claude.ai"></td>
+</tr>
+<tr>
+<td><b>Antigravity</b><br><img src="docs/img/open-antigravity.png" alt="antigravity.google"></td>
+<td></td>
+</tr>
+</table>
 
 ## Requirements
 
@@ -98,6 +130,8 @@ palette = 'high_contrast'
 | `catppuccin_mocha` | Pastel |
 | `tokyo_night` | Cool blues with neon accents |
 | `gruvbox_dark` | Warm and earthy |
+
+![The four palettes](docs/img/themes.png)
 
 Every palette keeps text at 7:1 contrast or more on its segment (WCAG AAA).
 Only `high_contrast` also separates neighboring segments by lightness.
